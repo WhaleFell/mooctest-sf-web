@@ -1162,6 +1162,175 @@ class TestSF:
             self.take_screenshot(driver, f"{case_id}_error.png")
             raise
 
+    def test_SF_R006(self, driver):
+        """Test SF R006: Service network query function
+        测试顺丰 R006：服务网点查询功能
+
+        Test steps - 测试步骤:
+        1. Click service support button - 点击服务支持按钮
+        2. Navigate to service network page - 进入服务网点页面
+        3. Select Shanghai - Huangpu District - 选择上海市-黄浦区
+        4. Input keyword "兴业太古汇" - 输入关键词"兴业太古汇"
+        5. Click query button - 点击查询按钮
+        6. Find and click "国泰君安快递服务中心" on map - 在地图中查找并点击"国泰君安快递服务中心"
+        7. Click city zoom level on map - 点击地图缩放控制条的【市】
+        8. Take screenshot including map, service details and zoom info - 截图保存结果
+        """
+        self.waiting_for_page_load(driver)
+        self.agree_cookie_policy(driver)
+
+        # XPath dictionary for element locators - XPath 元素定位器字典
+        # 等待人工填充 - Waiting for manual filling
+        XPATHS = {
+            "service_support_button": '//a[text()="服务支持"]',  # 服务支持按钮
+            "service_network_menu": '//li[contains(text(), "服务网点")]',  # 服务网点菜单
+            "area_select_box": '//*[@id="range-query-citypicker"]/input',  # 选择收寄件区域选择框
+            # 热门城市按钮
+            "hot_city": '//*[@id="range-query-citypicker"]/div/div[3]/div[1]/ul/li[1]',
+            "hot_city_shanghai": '//*[@id="range-query-citypicker"]/div/div[3]/div[2]/ul/li[2]',  # 热门城市上海选项
+            "huangpu_district": '//*[@id="range-query-citypicker"]/div/div[3]/div[2]/ul/li[1]',  # 黄浦区选项
+            "keyword_input": '//*[@id="range-key-word"]',  # 输入关键词输入框
+            "query_button": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[3]/button',  # 查询按钮
+            "service_center_marker": '//*[@id="chn"]/div/div[2]/div/div[2]/div[2]/div/div[1]/div[1]/div[2]/div[2]/span[131]',  # 国泰君安快递服务中心标记
+            "zoom_city_button": '//*[@id="chn"]/div/div[2]/div/div[2]/div[2]/div/div[1]/div[13]/div[2]/div[4]/div[2]',  # 地图缩放控制条【市】按钮
+        }
+
+        wait_time = 2
+        case_id = "SF_R006_001"
+
+        try:
+            logger.info(f"开始执行测试用例: {case_id}")
+            logger.info("测试参数 - 区域: 上海市 黄浦区, 关键词: 兴业太古汇")
+
+            # Step 1: Click service support button - 点击【服务支持】按钮
+            logger.info("Step 1: 点击【服务支持】按钮")
+            service_support_btn = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["service_support_button"]))
+            )
+            service_support_btn.click()
+            time.sleep(wait_time)
+            self.waiting_for_page_load(driver)
+
+            # Step 2: Click service network menu - 点击【服务网点】菜单
+            logger.info("Step 2: 点击左侧菜单栏的【服务网点】")
+            if XPATHS["service_network_menu"]:
+                network_menu = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, XPATHS["service_network_menu"])
+                    )
+                )
+                network_menu.click()
+                time.sleep(wait_time)
+                self.waiting_for_page_load(driver)
+            else:
+                logger.warning("⚠️ 服务网点菜单的XPATH未填充，跳过点击操作")
+
+            # Step 3: Select area - Shanghai, Huangpu District - 选择区域：上海市-黄浦区
+            logger.info("Step 3: 选择收寄件区域 - 上海市 黄浦区")
+            if XPATHS["area_select_box"]:
+                area_box = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, XPATHS["area_select_box"]))
+                )
+                area_box.click()
+                time.sleep(wait_time)
+
+                # Click hot city Shanghai - 点击热门城市的上海市
+                logger.info("点击热门城市的【上海市】")
+                if XPATHS["hot_city_shanghai"]:
+                    shanghai = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable(
+                            (By.XPATH, XPATHS["hot_city_shanghai"])
+                        )
+                    )
+                    shanghai.click()
+                    time.sleep(wait_time)
+                else:
+                    logger.warning("⚠️ 上海市选项的XPATH未填充，跳过点击操作")
+
+                # Click Huangpu District - 点击黄浦区
+                logger.info("点击黄浦区")
+                if XPATHS["huangpu_district"]:
+                    huangpu = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable(
+                            (By.XPATH, XPATHS["huangpu_district"])
+                        )
+                    )
+                    huangpu.click()
+                    time.sleep(wait_time)
+                else:
+                    logger.warning("⚠️ 黄浦区选项的XPATH未填充，跳过点击操作")
+            else:
+                logger.warning("⚠️ 选择收寄件区域选择框的XPATH未填充，跳过选择操作")
+
+            # Step 4: Input keyword - 输入关键词
+            logger.info("Step 4: 在【输入关键词】输入框中输入'兴业太古汇'")
+            if XPATHS["keyword_input"]:
+                keyword_input = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, XPATHS["keyword_input"]))
+                )
+                keyword_input.clear()
+                keyword_input.send_keys("兴业太古汇")
+                time.sleep(wait_time)
+                keyword_input.click()
+                time.sleep(wait_time)
+            else:
+                logger.warning("⚠️ 关键词输入框的XPATH未填充，跳过输入操作")
+
+            # Step 5: Click query button - 点击查询按钮
+            logger.info("Step 5: 点击【查询】按钮")
+            if XPATHS["query_button"]:
+                query_btn = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, XPATHS["query_button"]))
+                )
+                query_btn.click()
+                time.sleep(wait_time)
+                time.sleep(2)
+            else:
+                logger.warning("⚠️ 查询按钮的XPATH未填充，跳过点击操作")
+
+            # Step 6: Find and click service center on map - 在地图中查找并点击服务中心
+            logger.info("Step 6: 在地图中查找并点击'国泰君安快递服务中心'")
+            if XPATHS["service_center_marker"]:
+                service_center = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, XPATHS["service_center_marker"])
+                    )
+                )
+                service_center.click()
+                time.sleep(wait_time)
+                time.sleep(2)
+            else:
+                logger.warning("⚠️ 国泰君安快递服务中心标记的XPATH未填充，跳过点击操作")
+
+            # Step 7: Click city zoom level button - 点击地图缩放控制条的【市】按钮
+            logger.info("Step 7: 点击地图右下角缩放控制条的【市】按钮")
+            if XPATHS["zoom_city_button"]:
+                zoom_city_btn = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, XPATHS["zoom_city_button"]))
+                )
+                zoom_city_btn.click()
+                time.sleep(wait_time)
+                time.sleep(2)
+            else:
+                logger.warning("⚠️ 地图缩放【市】按钮的XPATH未填充，跳过点击操作")
+
+            # Step 8: Take screenshot - 截图保存查询结果
+            logger.info(
+                f"Step 8: 截图保存查询结果（包含整个地图、服务网点详细信息和缩放后的地图信息） - {case_id}"
+            )
+            self.take_screenshot(driver, f"{case_id}.png")
+
+            logger.info(f"✅ 测试用例 {case_id} 执行完成")
+
+        except selenium_exceptions.TimeoutException as e:
+            logger.error(f"❌ 超时异常: {str(e)}")
+            self.take_screenshot(driver, f"{case_id}_error.png")
+            raise
+        except Exception as e:
+            logger.error(f"❌ 测试执行失败: {str(e)}")
+            self.take_screenshot(driver, f"{case_id}_error.png")
+            raise
+
     # test-code-end
 
     @staticmethod
