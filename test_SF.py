@@ -636,8 +636,8 @@ class TestSF:
             "gulou_district": '//*[@id="destsCityPicker"]/div[3]/div[2]/ul/li[4]',  # 鼓楼区选项
             "weight_input": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[1]/ul/li[3]/figure/div/input',  # 重量输入框
             "send_time_control": '//*[@id="datetime"]/div/div[2]/input',  # 寄件时间控件
-            "date_input": "/html/body/div[7]/div[1]/div/div[1]/input",  # 日期输入框
-            "time_input": "/html/body/div[7]/div[1]/div/div[2]/input",  # 时间输入框
+            "date_input": "/html/body/div[7]/div[1]/div/div[1]/span[1]/div/input",  # 日期输入框
+            "time_input": "/html/body/div[7]/div[1]/div/div[1]/span[2]/div[1]/input",  # 时间输入框
             "confirm_button": "/html/body/div[7]/div[2]/button[2]",  # 确定按钮
             "query_button": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[2]/button',  # 查询按钮
             "express_product_section": '//*[@id="chn"]/div/div[2]/div/div[2]/div[2]',  # 快递产品区域
@@ -648,7 +648,9 @@ class TestSF:
 
         try:
             logger.info(f"开始执行测试用例: {case_id}")
-            logger.info("测试参数 - 始发地: 香港 九龙城区, 目的地: 南京市 鼓楼区, 重量: 100, 日期时间: 2025-11-17 15:00:00")
+            logger.info(
+                "测试参数 - 始发地: 香港 九龙城区, 目的地: 南京市 鼓楼区, 重量: 100, 日期时间: 2025-11-17 15:00:00"
+            )
 
             # Step 1: Click service support button - 点击【服务支持】按钮
             logger.info("Step 1: 点击【服务支持】按钮")
@@ -790,6 +792,363 @@ class TestSF:
             time.sleep(wait_time)
 
             logger.info(f"截图保存查询结果（包含寄件时间和快递产品信息） - {case_id}")
+            self.take_screenshot(driver, f"{case_id}.png")
+
+            logger.info(f"✅ 测试用例 {case_id} 执行完成")
+
+        except selenium_exceptions.TimeoutException as e:
+            logger.error(f"❌ 超时异常: {str(e)}")
+            self.take_screenshot(driver, f"{case_id}_error.png")
+            raise
+        except Exception as e:
+            logger.error(f"❌ 测试执行失败: {str(e)}")
+            self.take_screenshot(driver, f"{case_id}_error.png")
+            raise
+
+    @pytest.mark.parametrize(
+        "weight,length,width,height,case_id",
+        [
+            ("19", "5", "8", "6", "SF_R004_001"),
+            ("20", "5", "8", "6", "SF_R004_002"),
+            ("19", "100", "80", "90", "SF_R004_003"),
+            ("20", "100", "80", "90", "SF_R004_004"),
+        ],
+    )
+    def test_SF_R004(self, driver, weight, length, width, height, case_id):
+        """Test SF R004: Freight timeliness query with large package option
+        测试顺丰 R004：大件（20kg+）运费时效查询功能
+
+        Test steps - 测试步骤:
+        1. Click service support button - 点击服务支持按钮
+        2. Navigate to freight timeliness page - 进入运费时效页面
+        3. Select origin: Hong Kong - Kowloon City - 选择始发地：香港-九龙城区
+        4. Select destination: Nanjing - Gulou District - 选择目的地：南京-鼓楼区
+        5. Input weight and dimensions - 输入重量和体积
+        6. Input custom send date and time - 输入自定义寄件日期和时间
+        7. Click query button - 点击查询按钮
+        8. Click large package button - 点击【大件（20kg+）】按钮
+        9. Take screenshot including weight, dimensions and large package section - 截图保存结果
+        """
+        self.waiting_for_page_load(driver)
+        self.agree_cookie_policy(driver)
+
+        # XPath dictionary for element locators - XPath 元素定位器字典
+        # 复用已有的 XPATH - Reuse existing XPATHs
+        XPATHS = {
+            "service_support_button": '//a[text()="服务支持"]',
+            "freight_timeliness_menu": '//li[contains(text(), "运费时效")]',
+            "origin_select_box": '//*[@id="origion"]/div[1]/div/div[1]',
+            "hk_macau_taiwan_tab": '//*[@id="origincityPicker"]/div[1]/ul/li[2]',
+            "hongkong_option": '//*[@id="origincityPicker"]/div[3]/div[2]/ul/li[2]/span',
+            "kowloon_city_district": '//*[@id="origincityPicker"]/div[3]/div[2]/ul/li[6]',
+            "destination_select_box": '//*[@id="dests"]/div[1]/div/div[1]',
+            "hot_city_nanjing": '//*[@id="destsCityPicker"]/div[3]/div[2]/ul/li[8]',
+            "gulou_district": '//*[@id="destsCityPicker"]/div[3]/div[2]/ul/li[4]',
+            "weight_input": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[1]/ul/li[3]/figure/div/input',
+            "length_input": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[1]/ul/li[4]/figure/div/div[1]/input',
+            "width_input": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[1]/ul/li[4]/figure/div/div[2]/input',
+            "height_input": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[1]/ul/li[4]/figure/div/div[3]/input',
+            "send_time_control": '//*[@id="datetime"]/div/div[2]/input',
+            "date_input": "/html/body/div[7]/div[1]/div/div[1]/span[1]/div/input",
+            "time_input": "/html/body/div[7]/div[1]/div/div[1]/span[2]/div[1]/input",
+            "confirm_button": "/html/body/div[7]/div[2]/button[2]",
+            "query_button": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[2]/button',
+            "large_package_button": '//*[@id="chn"]/div/div[2]/div/div[2]/div[2]/ul[2]/li[2]',
+            "large_package_section": "",
+        }
+
+        wait_time = 2
+
+        try:
+            logger.info(f"开始执行测试用例: {case_id}")
+            logger.info(
+                f"测试参数 - 始发地: 香港 九龙城区, 目的地: 南京市 鼓楼区, "
+                f"重量: {weight}, 长: {length}, 宽: {width}, 高: {height}, "
+                f"日期时间: 2025-11-18 08:00:00"
+            )
+
+            # Step 1: Click service support button - 点击【服务支持】按钮
+            logger.info("Step 1: 点击【服务支持】按钮")
+            service_support_btn = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["service_support_button"]))
+            )
+            service_support_btn.click()
+            time.sleep(wait_time)
+            self.waiting_for_page_load(driver)
+
+            # Step 2: Click freight timeliness menu - 点击【运费时效】菜单
+            logger.info("Step 2: 点击左侧菜单栏的【运费时效】")
+            freight_menu = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, XPATHS["freight_timeliness_menu"])
+                )
+            )
+            freight_menu.click()
+            time.sleep(wait_time)
+            self.waiting_for_page_load(driver)
+
+            # Step 3: Select origin - Hong Kong, Kowloon City - 选择始发地：香港-九龙城区
+            logger.info("Step 3: 选择始发地 - 香港 九龙城区")
+            origin_box = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["origin_select_box"]))
+            )
+            origin_box.click()
+            time.sleep(wait_time)
+
+            # Click Hong Kong Macau Taiwan tab - 点击【港澳台】
+            logger.info("点击【港澳台】标签")
+            hk_macau_taiwan = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["hk_macau_taiwan_tab"]))
+            )
+            hk_macau_taiwan.click()
+            time.sleep(wait_time)
+
+            # Click Hong Kong - 点击香港
+            logger.info("点击香港")
+            hongkong = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["hongkong_option"]))
+            )
+            hongkong.click()
+            time.sleep(wait_time)
+
+            # Click Kowloon City District - 点击九龙城区
+            logger.info("点击九龙城区")
+            kowloon_city = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["kowloon_city_district"]))
+            )
+            kowloon_city.click()
+            time.sleep(wait_time)
+
+            # Step 4: Select destination - Nanjing, Gulou District - 选择目的地：南京-鼓楼区
+            logger.info("Step 4: 选择目的地 - 南京市 鼓楼区")
+            dest_box = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["destination_select_box"]))
+            )
+            dest_box.click()
+            time.sleep(wait_time)
+
+            # Click hot city Nanjing - 点击热门城市的南京市
+            logger.info("点击热门城市的【南京市】")
+            nanjing = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["hot_city_nanjing"]))
+            )
+            nanjing.click()
+            time.sleep(wait_time)
+
+            # Click Gulou District - 点击鼓楼区
+            logger.info("点击鼓楼区")
+            gulou = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["gulou_district"]))
+            )
+            gulou.click()
+            time.sleep(wait_time)
+
+            # Step 5: Input weight and dimensions - 输入重量和体积
+            logger.info(
+                f"Step 5: 输入重量和体积信息（重量: {weight}, 长: {length}, 宽: {width}, 高: {height}）"
+            )
+            weight_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, XPATHS["weight_input"]))
+            )
+            weight_input.clear()
+            weight_input.send_keys(weight)
+            time.sleep(wait_time)
+
+            length_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, XPATHS["length_input"]))
+            )
+            length_input.clear()
+            length_input.send_keys(length)
+            time.sleep(wait_time)
+
+            width_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, XPATHS["width_input"]))
+            )
+            width_input.clear()
+            width_input.send_keys(width)
+            time.sleep(wait_time)
+
+            height_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, XPATHS["height_input"]))
+            )
+            height_input.clear()
+            height_input.send_keys(height)
+            time.sleep(wait_time)
+
+            # Step 6: Input custom send date and time - 输入自定义寄件日期和时间
+            logger.info("Step 6: 输入寄件日期和时间（2025-11-18 08:00:00）")
+            time_control = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, XPATHS["send_time_control"]))
+            )
+            time_control.click()
+            time.sleep(wait_time)
+
+            # Input date - 输入日期
+            logger.info("输入日期: 2025-11-18")
+            date_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, XPATHS["date_input"]))
+            )
+            date_input.clear()
+            date_input.send_keys("2025-11-18")
+            time.sleep(wait_time)
+
+            # Input time - 输入时间
+            logger.info("输入时间: 08:00:00")
+            time_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, XPATHS["time_input"]))
+            )
+            time_input.click()
+            time_input.clear()
+            time.sleep(1)
+            time_input.clear()
+            time.sleep(1)
+            time_input.send_keys("08:00:00")
+            time.sleep(wait_time)
+
+            # Click confirm button - 点击确定按钮
+            logger.info("点击【确定】按钮")
+            confirm_btn = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["confirm_button"]))
+            )
+            confirm_btn.click()
+            time.sleep(wait_time)
+
+            # Step 7: Click query button - 点击查询按钮
+            logger.info("Step 7: 点击【查询】按钮")
+            query_btn = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["query_button"]))
+            )
+            query_btn.click()
+            time.sleep(wait_time)
+            time.sleep(2)
+
+            # Step 8: Click large package button - 点击【大件（20kg+）】按钮
+            logger.info("Step 8: 点击【大件（20kg+）】按钮")
+            if XPATHS["large_package_button"]:
+                large_package_btn = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, XPATHS["large_package_button"])
+                    )
+                )
+                large_package_btn.click()
+                time.sleep(wait_time)
+                time.sleep(2)
+            else:
+                logger.warning("⚠️ 大件（20kg+）按钮的XPATH未填充，跳过点击操作")
+
+            # Step 9: Scroll to large package section and take screenshot
+            # 滚动到大件产品区域并截图
+            logger.info("Step 9: 滚动到大件产品区域")
+            if XPATHS["large_package_section"]:
+                large_package_section = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, XPATHS["large_package_section"])
+                    )
+                )
+                driver.execute_script(
+                    "arguments[0].scrollIntoView(true);", large_package_section
+                )
+                time.sleep(wait_time)
+            else:
+                logger.warning("⚠️ 大件产品区域的XPATH未填充，跳过滚动操作")
+
+            logger.info(f"截图保存查询结果（包含重量、体积和大件产品信息） - {case_id}")
+            self.take_screenshot(driver, f"{case_id}.png")
+
+            logger.info(f"✅ 测试用例 {case_id} 执行完成")
+
+        except selenium_exceptions.TimeoutException as e:
+            logger.error(f"❌ 超时异常: {str(e)}")
+            self.take_screenshot(driver, f"{case_id}_error.png")
+            raise
+        except Exception as e:
+            logger.error(f"❌ 测试执行失败: {str(e)}")
+            self.take_screenshot(driver, f"{case_id}_error.png")
+            raise
+
+    @pytest.mark.parametrize(
+        "service_name,case_id",
+        [
+            ("保价", "SF_R005_001"),
+            ("代收贷款", "SF_R005_002"),
+            ("签单返还", "SF_R005_003"),
+            ("包装服务", "SF_R005_004"),
+        ],
+    )
+    def test_SF_R005(self, driver, service_name, case_id):
+        """Test SF R005: Other services navigation and screenshot
+        测试顺丰 R005：其他服务导航和截图功能
+
+        Test steps - 测试步骤:
+        1. Click service support button - 点击服务支持按钮
+        2. Navigate to freight timeliness page - 进入运费时效页面
+        3. Click other service button - 点击其他服务按钮
+        4. Navigate to corresponding page - 跳转到对应页面
+        5. Take screenshot - 截图保存页面结果
+        """
+        self.waiting_for_page_load(driver)
+        self.agree_cookie_policy(driver)
+
+        # XPath dictionary for element locators - XPath 元素定位器字典
+        # 复用已有的 XPATH - Reuse existing XPATHs
+        XPATHS = {
+            "service_support_button": '//a[text()="服务支持"]',
+            "freight_timeliness_menu": '//li[contains(text(), "运费时效")]',
+            "service_insured": '//*[@id="chn"]/div/div[2]/div/div[2]/div[3]/div/a[1]',  # 保价按钮
+            "service_cod": '//*[@id="chn"]/div/div[2]/div/div[2]/div[3]/div/a[2]',  # 代收贷款按钮
+            "service_sign_return": '//*[@id="chn"]/div/div[2]/div/div[2]/div[3]/div/a[3]',  # 签单返还按钮
+            "service_packaging": '//*[@id="chn"]/div/div[2]/div/div[2]/div[3]/div/a[4]',  # 包装服务按钮
+        }
+
+        wait_time = 2
+
+        try:
+            logger.info(f"开始执行测试用例: {case_id}")
+            logger.info(f"测试参数 - 其他服务: {service_name}")
+
+            # Step 1: Click service support button - 点击【服务支持】按钮
+            logger.info("Step 1: 点击【服务支持】按钮")
+            service_support_btn = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, XPATHS["service_support_button"]))
+            )
+            service_support_btn.click()
+            time.sleep(wait_time)
+            self.waiting_for_page_load(driver)
+
+            # Step 2: Click freight timeliness menu - 点击【运费时效】菜单
+            logger.info("Step 2: 点击左侧菜单栏的【运费时效】")
+            freight_menu = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, XPATHS["freight_timeliness_menu"])
+                )
+            )
+            freight_menu.click()
+            time.sleep(wait_time)
+            self.waiting_for_page_load(driver)
+
+            # Step 3: Click other service button - 点击其他服务按钮
+            logger.info(f"Step 3: 点击【{service_name}】按钮")
+
+            # Map service name to XPATH key - 将服务名称映射到XPATH键
+            service_xpath_map = {
+                "保价": "service_insured",
+                "代收贷款": "service_cod",
+                "签单返还": "service_sign_return",
+                "包装服务": "service_packaging",
+            }
+
+            xpath_key = service_xpath_map.get(service_name)
+            if xpath_key and XPATHS[xpath_key]:
+                service_btn = driver.find_element(By.XPATH, XPATHS[xpath_key])
+                service_btn.click()
+                time.sleep(wait_time)
+                self.waiting_for_page_load(driver)
+            else:
+                logger.warning(f"⚠️ {service_name}按钮的XPATH未填充，跳过点击操作")
+
+            # Step 4: Take screenshot - 截图保存页面结果
+            logger.info(f"Step 4: 截图保存【{service_name}】页面结果 - {case_id}")
+            time.sleep(wait_time)
             self.take_screenshot(driver, f"{case_id}.png")
 
             logger.info(f"✅ 测试用例 {case_id} 执行完成")
