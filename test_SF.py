@@ -1361,13 +1361,13 @@ class TestSF:
         XPATHS = {
             "service_support_button": '//a[text()="服务支持"]',  # 服务支持按钮
             "service_network_menu": '//li[contains(text(), "服务网点")]',  # 服务网点菜单
-            "area_select_box": "",  # 选择收寄件区域选择框
-            "area_input": "",  # 区域输入框（输入城市）
-            "district_option": "",  # 地区选项（需要动态替换地区名）
-            "keyword_input": "",  # 输入关键词输入框
-            "query_button": "",  # 查询按钮
-            "service_center_marker": "",  # 服务网点标记（需要根据实际情况填充）
-            "zoom_slider": "",  # 地图缩放控制条滑块
+            "area_select_box": '//*[@id="range-query-citypicker"]/input',  # 选择收寄件区域选择框
+            "area_input": '//*[@id="range-query-citypicker"]/div/div[2]/input',  # 区域输入框（输入城市）
+            "district_option": '//div[@class="address-name" and contains(., "{district}")]',  # 地区选项（需要动态替换地区名）
+            "keyword_input": '//*[@id="range-key-word"]',  # 输入关键词输入框
+            "query_button": '//*[@id="chn"]/div/div[2]/div/div[2]/div[1]/div[3]/button',  # 查询按钮
+            "service_center_marker": '//*[@id="chn"]/div/div[2]/div/div[2]/div[2]/div/div[1]/div[1]/div[2]/div[2]/span[3]',  # 服务网点标记（需要根据实际情况填充）
+            "zoom_slider": '//*[@id="chn"]/div/div[2]/div/div[2]/div[2]/div/div[1]/div[8]/div[2]/div[3]/div[3]',  # 地图缩放控制条滑块
         }
 
         wait_time = 2
@@ -1540,7 +1540,7 @@ class TestSF:
         # 等待人工填充 - Waiting for manual filling
         XPATHS = {
             "service_support_button": '//a[text()="服务支持"]',  # 服务支持按钮
-            "shipping_standard_menu": "",  # 收寄标准菜单
+            "shipping_standard_menu": '//li[contains(text(), "收寄标准")]',  # 收寄标准菜单
             "origin_select_box": "",  # 始发地选择框
             "origin_province_tab": "",  # 省/直辖市标签
             "origin_guangdong": "",  # 广东省选项
